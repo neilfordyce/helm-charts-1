@@ -1,6 +1,7 @@
 {{/*
 Return the name key for the License Key inside the secret
 */}}
+{{/*# TODO: Investigate if more characters commonly found in labels are not allowed in prometheus job names */}}
 {{- define "toPrometheus" -}}
 {{ . | replace "." "_" | replace "/" "_" | replace "-" "_" }}
 {{- end -}}
@@ -20,19 +21,19 @@ Return the name key for the License Key inside the secret
     - __meta_kubernetes_service_label_{{ include "toPrometheus" . }}
     {{- end }}
   # We need to add .* in both ends to get the hacky ORing because prometheus wraps this regex
-  # with ^ $ automatically, resulting in ^.*true.*$
+  # with ^ $ automatically. With this, it will result in ^.*true.*$
   regex: ".*true.*"
   separator: ";"
   action: keep
-# read the port from "prometheus.io/port: <port>" annotation and update scraping address accordingly
-# TODO: Do the same with /scheme and /path?
-- source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
-  action: replace
-  target_label: __address__
-  regex: ([^:]+)(?::\d+)?;(\d+)
-  # escaped $1:$2
-  replacement: $$1:$$2
-
+{{/*# TODO: Honor path and port labels somehow */}}
+{{/*# read the port from "prometheus.io/port: <port>" annotation and update scraping address accordingly*/}}
+{{/*# TODO: Do the same with /scheme and /path?*/}}
+{{/*- source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]*/}}
+{{/*  action: replace*/}}
+{{/*  target_label: __address__*/}}
+{{/*  regex: ([^:]+)(?::\d+)?;(\d+)*/}}
+{{/*  # escaped $1:$2*/}}
+{{/*  replacement: $$1:$$2*/}}
 # Keep meta labels regarding k8s objects
 - source_labels: [__meta_kubernetes_namespace]
   action: replace
@@ -45,6 +46,10 @@ Return the name key for the License Key inside the secret
 - source_labels: [__meta_kubernetes_pod_container_name]
   action: replace
   target_label: kubernetes_pod_container_name
+
+- source_labels: [__meta_kubernetes_pod_node_name]
+  action: replace
+  target_label: kubernetes_pod_node_name
 
 - source_labels: [__meta_kubernetes_service_name]
   action: replace

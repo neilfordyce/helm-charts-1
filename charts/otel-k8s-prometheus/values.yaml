@@ -1,5 +1,5 @@
 config:
-  # Labels and annotations to look for when scraping
+  # Labels and annotations to look for when scraping.
   labels:
     - prometheus.io/scrape
     - newrelic.com/scrape
@@ -7,17 +7,17 @@ config:
     - prometheus.io/scrape
     - newrelic.com/scrape
 
-  # How often to pull metrics from discovered targets
+  # How often to pull metrics from discovered targets.
   interval: 30s
 
   jobs:
     # Scrape pods annotated or labeled with the specified annotations, as well as endpoints behind annotated services.
     podsEndpoints:
       enabled: true
-    # Scrape headless services (externalName), pointing to exporters outside of the Kubernetes cluster.
-    # Keep in mind that the scraper will hit the server directly, which can lead to unexpected results if the serivice is
-    # distributing requests to more than one endpoint.
-    headless:
+    # Scrape externalName services, which may to exporters outside of the Kubernetes cluster.
+    # Keep in mind that the scraper will hit the server directly, which can lead to unexpected results if the serivice
+    # is distributing requests to more than one endpoint.
+    external:
       enabled: true
 
   # Prometheus scrape configs to add to the prometheus receiver.
@@ -28,9 +28,10 @@ config:
   batchProcessor:
     enabled: true
 
-  # Add a clusterName label to metrics gathered from the cluster.
-  clusterNameProcessor:
-    enabled: true
+  # This pre-configured processor will apply some transformations to labels and values to match the conventions used by
+  # New Relic. It should be enabled if you are sending data to New Relic.
+  nrConventionsProcessor:
+    enabled: false
 
   # Extra configs to use as processors for the otel collector.
   # By adding more processors here, metrics can be filtered or transformed with a high degree of flexibility:
@@ -45,17 +46,17 @@ config:
     #      metric_names:
     #        - kube_.*
 
-  # Configure the logging exporter.
+  # Configure the logging exporter, which can log to stderr all the metrics received by the collector.
   # See: https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/loggingexporter
   loggingExporter:
-    enabled: true
+    enabled: false
     loglevel: info
 
   # Configure the OTLP exporter, which would typically hit an in-cluster gateway collector.
   # Env var NR_LICENSE_KEY is available containing the license key.
   # See: https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/otlpexporter
   otlpExporter:
-    enabled: true
+    enabled: false
     endpoint: otlp.nr-data.net:4317
     headers:
       api-key: "${NR_LICENSE_KEY}"  # Added to the deployment's env by the chart automatically

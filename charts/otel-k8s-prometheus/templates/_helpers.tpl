@@ -78,7 +78,7 @@ Return the cluster name
 Return the cluster name
 */}}
 {{- define "newrelic.cluster" -}}
-{{ include "newrelic.clusterGlobal" . | required "You must specify a cluster name as either cluster or global.cluster" }}
+{{ include "newrelic.clusterGlobal" . | default (include "otel-k8s-prometheus.fullname" . ) }}
 {{- end -}}
 
 {{/*
